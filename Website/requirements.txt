@@ -1,0 +1,11 @@
+flask
+flask_login
+flask_migrate
+flask_wtf
+flask_session
+email_validator
+python-decouple
+gunicorn
+imutils
+boto3
+AWSIoTPythonSDK

@@ -1,0 +1,9 @@
+Place aws certs here
+
+pub/certificate.pem.crt
+pub/private.pem.key
+
+sub/certificate.pem.crt
+sub/private.pem.key
+
+rootca.pem

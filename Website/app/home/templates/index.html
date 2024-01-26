@@ -1,0 +1,388 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Dashboard {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <!-- Header -->
+    <div class="header bg-primary pt-3 pb-6">
+      <div class="container-fluid">
+          <div class="header-body">
+              <div class="row align-items-center py-4">
+                  <div class="col-lg-6 col-7">
+                      <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+                          <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                              <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i></a></li>
+                              <li class="breadcrumb-item"><a href="#">Dashboards</a></li>
+                          </ol>
+                      </nav>
+                  </div>
+              </div>
+
+              <!-- Card stats -->
+              <div class="row justify-content-md-center">
+
+                  <!-- Water level status -->
+                  <div class="col-xl-4 col-md-6">
+                      <div class="card card-stats">
+                          <!-- Card body -->
+                          <div class="card-body">
+                              <div class="row">
+                                  <div class="col">
+                                      <h5 class="card-title text-uppercase text-muted mb-0">Water Level Status</h5>
+                                      <span id="current_water_stat" class="h2 font-weight-bold mb-0">Obtaining data...</span>
+                                  </div>
+                                  <div class="col-auto">
+                                      <div class="icon icon-shape bg-gradient-red text-white rounded-circle shadow">
+                                          <i class="fa fa-thermometer" style="font-size: 40px;"></i>
+                                      </div>
+                                  </div>
+                              </div>
+                              <p class="mt-3 mb-0 text-sm">
+                                  <span class="mr-2">Last updated: <span id="water_update_time" class="text-nowrap">---</span>	</span>
+                              </p>
+                          </div>
+                      </div>
+                  </div>
+
+                  <!-- Food Percentage -->
+                  <div class="col-xl-4 col-md-6">
+                      <div class="card card-stats">
+                          <!-- Card body -->
+                          <div class="card-body">
+                              <div class="row">
+                                  <div class="col">
+                                      <h5 class="card-title text-uppercase text-muted mb-0">Food Left</h5>
+                                      <span id="current_food" class="h2 font-weight-bold mb-0">Obtaining data...</span>
+                                  </div>
+                                  <div class="col-auto">
+                                      <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
+                                          <i class="fas fa-percent"></i>
+                                      </div>
+                                  </div>
+                              </div>
+                              <p class="mt-3 mb-0 text-sm">
+                                  <span class="mr-2">Last updated: <span id="food_update_time" class="text-nowrap">...</span> </span>
+                              </p>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+    </div>
+
+    <!-- Page content -->
+    <div class="container-fluid mt--6">
+      <div class="row">
+        <div class="col-xl-12">
+          <div class="card bg-default">
+            <div class="card-header bg-transparent">
+              <div class="row align-items-center">
+                <div class="col">
+                  <h6 class="text-light text-uppercase ls-1 mb-1">Realtime Update</h6>
+                  <h5 class="h3 text-white mb-0">Temperature</h5>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <!-- Chart -->
+              <div class="chart">
+                <!-- Chart wrapper -->
+                <canvas id="chart-temperature-dark" class="chart-canvas"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <!-- VR and Rekognition -->
+    <div class="row justify-content-md-center">
+        <div class="col-xl-6 col-md-6">
+            <div class="card card-stats">
+                <!-- Card body -->
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-xl-12">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h3 class="mb-0">Learn More</h3>
+                                </div>
+                                <div class="col text-right">
+                                    <a href="https://76937e85432b4ada8d51e96b926e1440.us-east-1.sumerian.aws/?" target="_blank" class="btn btn-sm btn-primary">Enter VR</a>
+                                </div>
+                                <p class="mt-3 mb-0 text-sm">
+                                    <span class="mr-2">Enter into the world of Virtual Reality to learn more about the little creatures you raised.</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6 col-md-6">
+            <div class="card card-stats">
+                <!-- Card body -->
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-xl-12">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h3 class="mb-0">Determine your fish breed</h3>
+                                </div>
+                                <p class="mt-3 mb-0 text-sm">
+                                    <span class="mr-2" id="rekognition"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+      <!-- Alerts system -->
+      <div class="row">
+        <div class="col-xl-12">
+          <div class="card">
+            <div class="card-header border-0">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h3 class="mb-0">Last 15 Alerts</h3>
+                    </div>
+                    <!--<div class="col text-right">
+                        <a href="#!" class="btn btn-sm btn-primary">See all</a>
+                    </div>-->
+                </div>
+            </div>
+            <div class="table-responsive">
+              <!-- Projects table -->
+              <table class="table align-items-center table-flush">
+                <thead class="thead-light">
+                  <tr>
+                    <th scope="col" class="col-md-7">Details</th>
+                    <th scope="col" class="col-md-2">Type</th>
+                    <th scope="col" class="col-md-3">Receive Date</th>
+                  </tr>
+                </thead>
+                <tbody id="alert_table">
+                    {% if alerts %}
+                    {% for alert in alerts %}
+                        <tr>
+                            <th scope="row">{{ alert.get('desc') }}</th>
+                            <td>
+                                {% if alert.get('type') == 'Warning' %}
+                                <i class="fas fa-exclamation-triangle" style="font-size: 24px; color: yellow;"></i>
+                                {% elif alert.get('type') == 'Error' %}
+                                <i class="fas fa-exclamation-circle" style="font-size: 24px; color: red;"></i>
+                                {% else %}
+                                <i class="fas fa-info-circle" style="font-size: 24px; color: blue;"></i>
+                                {% endif %}
+                            </td>
+                            <td> {{ alert.get('date') }} </td>
+                        </tr>
+                    {% endfor %}
+                    {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% include "includes/footer.html" %}
+
+    </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}
+
+<script src="/static/assets/vendor/chart.js/dist/Chart.min.js"></script>
+<script src="/static/assets/vendor/chart.js/dist/Chart.extension.js"></script>
+<script type="text/javascript">
+    // Alerts table
+    /** $(document).ready(
+        setInterval(function () {
+            jQuery.ajax({
+                url: "/api/getAlerts",
+                type: 'GET',
+                //contentType: 'application/json',
+                success: function (ndata, textStatus, xhr) {
+                    console.log(ndata)
+                    $('#alert_table tr').remove();
+
+                    for (var i = 0; i <= Object.keys(ndata).length; i++) {
+                        $row = $("#alert_table").append("<tr></tr>");
+                        $row.append('<th scope="row">' + ndata['desc'] + '</th>')
+                        if (ndata['type'] == "Error") { $row.append('<td><i class="fas fa-exclamation-circle" style="font-size: 24px; color: red;"></i></td>') }
+                        else if (ndata['type'] == "Warning") { $row.append('<td><i class="fas fa-exclamation-triangle" style="font-size: 24px; color: yellow;"></i></td>') }
+                        else { $row.append('<td><i class="fas fa-info-circle" style="font-size: 24px; color: blue;"></i></td>') }
+                        $row.append("<td>" + ndata['date'] + "</td>");
+                    }
+                }//end success
+            });//end ajax
+        }, 5000)); **/
+
+    $(document).ready(
+        function () {
+            // get food percent once
+            jQuery.ajax({
+                url: "/api/getFoodPercent",
+                type: 'GET',
+                dataType: 'json',
+                success: function (ndata, textStatus, xhr) {
+                    console.log(ndata)
+                    $('#current_food').text(ndata.value)
+                    $('#food_update_time').text(ndata.time)
+                }
+            });//end ajax
+
+            // get water level status constant
+            setInterval(function () {
+                jQuery.ajax({
+                    url: "/api/getWaterLevelStatus",
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (ndata, textStatus, xhr) {
+                        console.log(ndata)
+                        $('#current_water_stat').text(ndata.value)
+                        $('#water_update_time').text(ndata.time)
+                    }//end success
+                });//end ajax
+            }, 30000)
+        }
+    );
+
+</script>
+
+<script type="text/javascript">
+    // temperature chart
+    var chart_count = 0;
+
+    function removeLastElement(chart) {
+        // remove first element in array
+        chart.data.labels.shift();
+        chart.data.datasets.forEach((dataset) => {
+            dataset.data.shift();
+        });
+        chart.update();
+        chart_count -= 1;
+    }
+    function addData(chart, label, data) {
+        chart.data.labels.push(label);
+        chart.data.datasets.forEach((dataset) => {
+            dataset.data.push(data);
+        });
+        chart.update();
+        chart_count += 1;
+    }
+
+    // create chart for temperature
+    var c_temp = new Chart($('#chart-temperature-dark'), {
+        type: 'line',
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: {
+                display: false
+            },
+            scales: {
+                xAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Time'
+                    }
+                }],
+                yAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Temperature'
+                    },
+                    scaleSteps: 1,
+                    scaleStepWidth: 50, 
+                    gridLines: {
+                        lineWidth: 1,
+                        color: 'rgba(248, 249, 254, 0.7)',
+                        zeroLineColor: 'rgba(248, 249, 254, 0.7)'
+                    },
+                    /**ticks: {
+                        callback: function (value) {
+                            if (!(value % 1)) {
+                                return Math.round(value).toFixed(2) + '\u{2103}';
+                            }
+                        }
+                    }**/
+                }]
+            },
+            tooltips: {
+                callbacks: {
+                    label: function (item, data) {
+                        var label = data.datasets[item.datasetIndex].label || '';
+                        var yLabel = item.yLabel;
+                        var content = '';
+
+                        if (data.datasets.length > 1) {
+                            content += 'Time: ' + label;
+                        }
+
+                        content += 'Temp: ' + yLabel + '\u{2103}';
+                        return content;
+                    }
+                }
+            }
+        },
+        data: {
+            labels: [],
+            datasets: [
+                {   
+                    borderColor: 'rgba(248, 249, 254, 0.7)',
+                    data: []
+                }
+            ]
+        }
+    });
+
+    $(document).ready(
+        setInterval(function () {
+            jQuery.ajax({
+                url: "/api/getTempData",
+                type: 'GET',
+                dataType: 'json',
+                success: function (ndata, textStatus, xhr) {
+                    console.log(ndata)
+                    if (chart_count < 10) { 
+                        addData(c_temp, ndata.time, ndata.temperature)
+                    } else {
+                        // keeps data in graph to limit of 10 items
+                        removeLastElement(c_temp)
+                        addData(c_temp, ndata.time, ndata.temperature)
+                    }
+                    document.getElementById('rekognition').innerHTML = ndata.msg;
+                    //$("#current_temperature").html(ndata.temp);
+                    //$("#update_time").html(ndata.time)
+                }//end success
+            });//end ajax
+        }, 5000));
+
+</script>
+<script>
+    $(document).ready(
+        setInterval(function () {
+            jQuery.ajax({
+                url: "/api/getRekognition",
+                type: 'GET',
+                dataType: 'text',
+                success: function (ndata, textStatus, xhr) {
+                    console.log(ndata)
+                    document.getElementById('rekognition').innerHTML = ndata;
+                }//end success
+            });//end ajax
+        }, 10000));
+</script>
+{% endblock javascripts %}

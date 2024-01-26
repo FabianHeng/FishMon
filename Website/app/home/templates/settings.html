@@ -1,0 +1,141 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Icons {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <!-- Header -->
+    <div class="header bg-gradient-primary pb-8 pt-5">
+      <div class="container-fluid">
+          <div class="header-body">
+              <div class="row align-items-center py-4">
+                  <div class="col-lg-6 col-7">
+                      <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+                          <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                              <li class="breadcrumb-item"><a href="/index"><i class="fas fa-home"></i></a></li>
+                              <li class="breadcrumb-item"><a href="/settings">Settings</a></li>
+                          </ol>
+                      </nav>
+                  </div>
+              </div>
+          </div>
+      </div>
+    </div>
+
+    <div class="container-fluid mt--7">
+
+        <div class="row">
+            <div class="col">
+
+                <!-- Food Settings -->
+                <div class="card shadow">
+                    <div class="card-header bg-transparent">
+                        <h3 class="mb-0">Food Settings</h3>
+                    </div>
+
+                    <div class="card-body">
+                        <form action="/api/updateSettings/food" method="POST">
+                            <div class="form-group row pl-4">
+                                <label for="foodCountInput" class="col-sm-4 col-form-label">No. of Times to Feed</label>
+                                <div class="col-xs-2">
+                                    <input type="text" class="form-control" id="foodCountInput" name="foodCountInput" value="">
+                                </div>
+                            </div>
+                            <div class="form-group row pl-4">
+                                <label for="foodWarnInput" class="col-sm-4 col-form-label">Food Remaining Alert Threshold</label>
+                                <div class="col-xs-2">
+                                    <input type="text" class="form-control" id="foodWarnInput" name="foodWarnInput" value="">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary ml-4">Update</button>
+                            {% if msg_f %}
+                            <div class="pt-4 pl-4">{{ msg_f }}</div>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Temperature Settings -->
+                <div class="card shadow">
+                    <div class="card-header bg-transparent">
+                        <h3 class="mb-0">Temperature Settings</h3>
+                    </div>
+                    <div class="card-body">
+                        <form action="/api/updateSettings/temperature" method="POST">
+                            <div class="form-group row pl-4">
+                                <label for="minTempInput" class="col-sm-4 col-form-label">Minimum Temperature Alert Threshold</label>
+                                <div class="col-xs-2">
+                                    <input type="text" class="form-control" id="minTempInput" name="minTempInput" value="">
+                                </div>
+                            </div>
+                            <div class="form-group row pl-4">
+                                <label for="maxTempInput" class="col-sm-4 col-form-label">Maximum Temperature Alert Threshold</label>
+                                <div class="col-xs-2">
+                                    <input type="text" class="form-control" id="maxTempInput" name="maxTempInput" value="">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary ml-4">Update</button>
+                            {% if msg_t %}
+                            <div class="pt-4 pl-4">{{ msg_t }}</div>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Twilio Alert Settings -->
+                <div class="card shadow">
+                    <div class="card-header bg-transparent">
+                        <h3 class="mb-0">Alert Settings</h3>
+                    </div>
+
+                    <div class="card-body">
+                        <div class=""></div>
+                        <form action="/api/updateSettings/alert" method="POST">
+                            <div class="form-group row pl-4">
+                                <label for="twilioHP" class="col-sm-4 col-form-label">Alert Phone Number</label>
+                                <div class="col-xs-8">
+                                    <input type="text" class="form-control" id="twilioHP" name="twilioHP" value="">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary ml-4">Update</button>
+                            {% if msg_a %}
+                                <div class="pt-4 pl-4">{{ msg_a }}</div>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% include "includes/footer.html" %}
+
+    </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}
+
+<script src="/static/assets/vendor/clipboard/dist/clipboard.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(
+        function () {
+            jQuery.ajax({
+                url: "/api/updateSettings/get",
+                type: 'GET',
+                dataType: 'json',
+                success: function (ndata, textStatus, xhr) {
+                    console.log(ndata)
+                    $('#foodCountInput').val(ndata.foodDispenseTimes)
+                    $('#foodWarnInput').val(ndata.foodWarnThreshold)
+                    $('#minTempInput').val(ndata.minTempThreshold)
+                    $('#maxTempInput').val(ndata.maxTempThreshold)
+                    $('#twilioHP').val(ndata.twilio_hp)
+                }//end success
+            });//end ajax
+        });
+</script>
+{% endblock javascripts %}

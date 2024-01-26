@@ -1,0 +1,137 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Icons {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}
+<style>
+	.player {
+		width: 100%;
+		height: auto;
+		min-height: 400px;
+		background-color: black;
+		outline: none;
+	}
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+
+    <!-- Header -->
+    <div class="header bg-gradient-primary pb-8 pt-5">
+      <div class="container-fluid">
+          <div class="header-body">
+              <div class="row align-items-center py-4">
+                  <div class="col-lg-6 col-7">
+                      <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+                          <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                              <li class="breadcrumb-item"><a href="/index"><i class="fas fa-home"></i></a></li>
+                              <li class="breadcrumb-item"><a href="/stream">Camera Stream</a></li>
+                          </ol>
+                      </nav>
+                  </div>
+              </div>
+          </div>
+      </div>
+    </div>
+
+    <div class="container-fluid mt--7">
+
+      <div class="row">
+        <div class="col">
+          <div class="card shadow">
+            <div class="card-header bg-transparent">
+              <h3 class="mb-0">Camera Stream</h3>
+            </div>
+            <div class="card-body">
+		<!-- HLS.js elements -->
+		<video id="hlsjs" class="player" controls autoplay></video>
+		<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>		
+            </div>
+            <form>
+	        <script type="text/javascript">
+		    function runFeeder() {
+		        jQuery.ajax({
+			    url: '/api/runFeeder',
+			    type: 'GET',
+			    dataType: 'text',			
+			    success: function (ndata, status, xhr){
+			        console.log("feeder ran");
+			    }
+		        });
+	            }
+
+	        </script>
+	        <button class="btn btn-primary mt-4" type="button" onClick="runFeeder()">Feed Now!</button>
+	    </form>
+          </div>
+        </div>
+      </div>
+
+      {% include "includes/footer.html" %}
+
+    </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.490.0/aws-sdk.min.js"></script>
+<script src="/static/assets/vendor/clipboard/dist/clipboard.min.js"></script>
+
+<script>
+	var options = {
+		accessKeyId: "{{ creds.get('access_key') }}",
+		secretAccessKey: "{{ creds.get('secret_key') }}",
+		sessionToken: "{{ creds.get('token') }}",
+		region: "us-east-1"
+	}
+	var kinesisVideo = new AWS.KinesisVideo(options);
+	var kinesisVideoArchivedContent = new AWS.KinesisVideoArchivedMedia(options);
+
+	// Step 2: Get a data endpoint for the stream
+	console.log('Fetching data endpoint');
+	kinesisVideo.getDataEndpoint({
+		StreamName: "iot-stream",
+		APIName: "GET_HLS_STREAMING_SESSION_URL"
+	}, function(err, response) {
+		if (err) { return console.error(err); }
+		console.log('Data endpoint: ' + response.DataEndpoint);
+		kinesisVideoArchivedContent.endpoint = new AWS.Endpoint(response.DataEndpoint);
+
+		// Step 3: Get a Streaming Session URL
+		//var consoleInfo = 'Fetching ' + protocol + ' Streaming Session URL';
+		//console.log(consoleInfo);
+		kinesisVideoArchivedContent.getHLSStreamingSessionURL({
+			StreamName: "iot-stream",
+			PlaybackMode: "LIVE",
+			HLSFragmentSelector: {
+				FragmentSelectorType: "SERVER_TIMESTAMP",
+			},
+			ContainerFormat: "FRAGMENTED_MP4",
+			DiscontinuityMode: "ALWAYS",
+			DisplayFragmentTimestamp: "NEVER",
+		}, function(err, response) {
+			if (err) { return console.error(err); }
+			console.log('HLS Streaming Session URL: ' + response.HLSStreamingSessionURL);
+
+			// Step 4: Give the URL to the video player.
+			var playerElement = $('#hlsjs');
+			playerElement.show();
+			var player = new Hls();
+			console.log('Created HLS.js Player');
+			player.loadSource(response.HLSStreamingSessionURL);
+			player.attachMedia(playerElement[0]);
+			console.log('Set player source');
+			player.on(Hls.Events.MANIFEST_PARSED, function() {
+				video.play();
+				console.log('Starting playback');
+			});
+			
+		});
+		
+		$('.player').hide();
+	});
+</script>
+
+{% endblock javascripts %}
